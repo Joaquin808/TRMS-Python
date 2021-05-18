@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Department Supervisor</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+</head>
+<body>
+    <h1>Reimbursment Form</h1>
+
+    <div id="divContainer" div="container">
+        <table class="table table-striped table-bordered" id="form">
+            <tr>
+                <th>Needed Data</th>
+                <th>Inputs</th>
+            </tr>
+            <tr>
+                <td>First Name</td>
+                <td id="fname">-</td>
+            </tr>
+            <tr>
+                <td>Last Name</td>
+                <td id="lname">-</td>
+            </tr>
+            <tr>
+                <td>Event Date</td>
+                <td id="eventDate">-</td>
+            </tr>
+            <tr>
+                <td>Event Time</td>
+                <td id="eventTime">-</td>
+            </tr>
+            <tr>
+                <td>Location</td>
+                <td id="location">-</td>
+            </tr>
+            <tr>
+                <td>Description of Event</td>
+                <td id="description">-</td>
+            </tr>
+            <tr>
+                <td>Event Cost</td>
+                <td id="cost">-</td>
+            </tr>
+            <tr>
+                <td>Grading Format</td>
+                <td id="gradingFormat">-</td>
+            </tr>
+            <tr>
+                <td>Type of Event</td>
+                <td id="typeOfEvent">-</td>
+            </tr>
+            <tr>
+                <td>Passing Grade Cutoff</td>
+                <td id="passingCutoff">-</td>
+            </tr>
+            <tr>
+                <td>Work Justification</td>
+                <td id="workJust">-</td>
+            </tr>
+            <tr>
+                <td id="approvalPerson">Department Supervisor Approval</td>
+                <td><input id="approval" type="checkbox" onclick="approve()"> </td>
+            </tr>
+            <tr>
+                <td>Reject Form</td>
+                <td><input id="rejectForm" type="checkbox" onclick="reject()"> </td>
+            </tr>
+            <tr>
+                <td>Request Additional Information</td>
+                <td><input id="addInfo" type="checkbox" onclick="requestInfo()"> </td>
+            </tr>
+            <tr>
+                <td>Deny Reason</td>
+                <td><input id="denyReason" type="text"></td>
+            </tr>
+        </table>
+        <button onclick="returnToInfoPage()">Back</button>
+        <button id="submitButton" onclick="submitForm()">Submit</button>
+    </div>
+    
+</body>
+
+<script>
+
+    let url = document.location.href, params = url.split('?')[1].split('&'), data = {}, tmp;
+    for (var i = 0, l = params.length; i < l; i++) {
+        tmp = params[i].split('=');
+        data[tmp[0]] = tmp[1];
+    }
+
+    let approvalKey = "";
+    let approvalValue = false;
+
+    if (data.id == 2){
+        approvalKey = "dsupApproval";
+        document.getElementById("approvalPerson").innerHTML = "Department Supervisor Approval";
+    } else if (data.id == 3){
+        approvalKey = "dheadApproval";
+        document.getElementById("approvalPerson").innerHTML = "Department Head Approval";
+    } else if (data.id == 4){
+        approvalKey = "bencoApproval";
+        document.getElementById("approvalPerson").innerHTML = "Benefits Coordinator Approval";
+    }
+
+    function returnToInfoPage(){
+        document.location.href = "EmployeeInformation.html?id=" + data.id;
+    }
+
+    let requestAddInfo = false;
+    function requestInfo(){
+        if (document.getElementById("addInfo").checked){
+            requestAddInfo = true;
+        } else {
+            requestAddInfo = false;
+        }
+    }
+    
+    function approve(){
+        if (document.getElementById("approval").checked){
+            approvalValue = true;
+        } else {
+            approvalValue = false
+        }
+    }
+
+    let rejectValue = false;
+    function reject(){
+        if (document.getElementById("rejectForm").checked){
+            rejectValue = true;
+        } else {
+            rejectValue = false
+        }
+    }
+
+    function submitForm(){
+        let xttp = new XMLHttpRequest();
+
+        xttp.onreadystatechange = function(){
+            console.log(this.readyState);
+
+            if (this.readyState == 4 && this.status == 200){
+                console.log(this.responseText);
+
+                document.getElementById("divContainer").innerHTML = "Reimbursement form has been approved";
+            }
+        }
+
+        // let employee_id = 2;
+        url = "http://localhost:5000/login/" + data.id + "/approve";
+
+        xttp.open("PUT", url, true);
+
+        xttp.setRequestHeader('Content-Type', 'application/json');
+
+        let completedForm = {
+            "fname": document.getElementById("fname").innerHTML,
+            "lname": document.getElementById("lname").innerHTML,
+            "eventDate": document.getElementById("eventDate").innerHTML,
+            "eventTime": document.getElementById("eventTime").innerHTML,
+            "location": document.getElementById("location").innerHTML,
+            "description": document.getElementById("description").innerHTML,
+            "cost": document.getElementById("cost").innerHTML,
+            "gradingFormat": document.getElementById("gradingFormat").innerHTML,
+            "typeOfEvent": document.getElementById("typeOfEvent").innerHTML,
+            "passingCutoff": document.getElementById("passingCutoff").innerHTML,
+            "workJust": document.getElementById("workJust").innerHTML,
+            approvalKey: approvalValue,
+            "rejectForm": rejectValue,
+            "addInfo": requestAddInfo,
+            "denyReason": document.getElementById("denyReason").value
+        };
+
+        Object.keys(completedForm).forEach(function(key){
+            completedForm[approvalKey] = completedForm["approvalKey"]
+        });
+
+        xttp.send(JSON.stringify(completedForm));
+    }
+
+</script>
+
+<!-- I want to retrieve the employee's submitted form so I can display the 
+information on the page -->
+<script>
+    
+    function loadForm(){
+        let xttp = new XMLHttpRequest()
+
+        xttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200){
+                let retrievedForm = JSON.parse(this.responseText);
+                console.log(retrievedForm);
+
+                if (retrievedForm.dsupApproval == false && data.id == 2 || retrievedForm.dheadApproval == false && data.id == 3 || retrievedForm.bencoApproval == false && data.id == 4){
+                    document.getElementById("fname").innerHTML = retrievedForm.fname;
+                    document.getElementById("lname").innerHTML = retrievedForm.lname;
+                    document.getElementById("eventDate").innerHTML = retrievedForm.eventDate;                    
+                    document.getElementById("eventTime").innerHTML = retrievedForm.eventTime;
+                    document.getElementById("location").innerHTML = retrievedForm.location;
+                    document.getElementById("description").innerHTML = retrievedForm.description;
+                    document.getElementById("cost").innerHTML = retrievedForm.cost;
+                    document.getElementById("gradingFormat").innerHTML = retrievedForm.gradingFormat;
+                    document.getElementById("typeOfEvent").innerHTML = retrievedForm.typeOfEvent;
+                    document.getElementById("passingCutoff").innerHTML = retrievedForm.passingCutoff;
+                    document.getElementById("workJust").innerHTML = retrievedForm.workJust;
+                } else {
+                    document.getElementById("divContainer").innerHTML = "No reibursement forms require any attention";
+                } 
+            }
+        }
+            
+        url = "http://localhost:5000/login/" + 0 + "/form";
+        xttp.open("GET", url, true);
+
+        xttp.send();
+    }
+
+    loadForm();
+
+</script>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Employee Information</title>
+</head>
+<body>
+
+    <h1>Employee Information</h1>
+    <h3 id="fname"></h3>
+    <h3 id="lname"></h3>
+
+    <h1> Reimbursement Form</h1>
+    <button id="newButton" onclick="openForm()">Submit a new reinbursement form</button>
+    <button id="submittedButton" onclick="submittedForms()">View Submitted Reimbursement Forms</button>
+    
+</body>
+
+<script>
+
+    let url = document.location.href, params = url.split('?')[1].split('&'), data = {}, tmp;
+    for (var i = 0, l = params.length; i < l; i++) {
+        tmp = params[i].split('=');
+        data[tmp[0]] = tmp[1];
+    }
+
+    function openForm(){
+        // window.location.replace("EmployeeForm.html");
+        if (data.id >= 2){
+            document.location.href = "FormApproval.html?id" + data.id;
+        } else {
+            document.location.href = "EmployeeForm.html?id=" + data.id;
+        }
+    }
+
+    function submittedForms(){
+        if (data.id >= 2){
+            document.location.href = "FormApproval.html?id=" + data.id;
+        } else {
+            document.location.href = "EmployeeSubmittedForms.html?id=" + data.id;
+        }
+    }
+
+    function loadInfo(){
+        console.log(data.id);
+
+        let xttp = new XMLHttpRequest();
+
+        xttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200){
+                // console.log("Load info");
+                let info = JSON.parse(this.responseText);
+
+                document.getElementById("fname").innerHTML = "First Name: " + info.fname;
+                document.getElementById("lname").innerHTML = "Last Name: " + info.lname;
+
+                if (data.id >= 2){
+                    document.getElementById("newButton").remove();
+                }
+            }
+        }
+
+        let id = data.id;
+        url = "http://localhost:5000/login/" + id + "/info";
+
+        xttp.open("GET", url, true);
+
+        xttp.send();
+    }
+
+    loadInfo();
+
+</script>
+</html>

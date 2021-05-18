@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login</title>
+</head>
+<body>
+
+    <h1 id="topOfPage">Employee Login</h1>
+
+    <h3>Username</h3>
+    <input type="text" id="username">
+
+    <h3>Password</h3>
+    <input type="password" id="password">
+
+    <button onclick="login()" id="login">Login</button>
+    <span id="message"></span>
+    
+</body>
+
+<script>
+
+    function login(){
+        console.log("login");
+
+        let xttp = new XMLHttpRequest();
+        
+        xttp.onreadystatechange = function(){
+            console.log(this.readyState);
+
+            if (this.readyState == 4 && this.status == 200){
+                console.log(this.responseText);
+
+                let employee = JSON.parse(this.responseText);
+                // window.location.replace("EmployeeInformation.html");
+                document.location.href = "EmployeeInformation.html?id=" + employee.id;
+            }
+        }
+
+        url = "http://localhost:5000/login";
+
+        xttp.open("POST", url, true);
+
+        let body = {
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value
+        };
+
+        xttp.setRequestHeader('Content-Type', 'application/json')
+
+        xttp.send(JSON.stringify(body));
+    }
+
+</script>
+</html>

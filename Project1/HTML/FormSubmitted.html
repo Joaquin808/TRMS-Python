@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Form Submission</title>
+</head>
+<body>
+
+    <h3> Your Reimbursement Form has been submitted successfully! </h3>
+    <button id="homeButton" onclick="returnHome()">Return to Home Page</button>
+    
+</body>
+
+<script>
+    let url = document.location.href, params = url.split('?')[1].split('&'), data = {}, tmp;
+    for (var i = 0, l = params.length; i < l; i++) {
+        tmp = params[i].split('=');
+        data[tmp[0]] = tmp[1];
+    }
+
+    function returnHome(){
+        document.location.href = "EmployeeInformation.html?id=" + data.id;
+    }
+</script>
+</html>
